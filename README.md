@@ -209,3 +209,84 @@ SSL (Secure Sockets Layer) is essential for securing your website. Certbot is a 
 #### **Conclusion**
 
 This guide should provide you with a comprehensive understanding of how to deploy a Dockerized application on an Ubuntu VPS, even if you are an absolute novice. By following these steps, you can securely set up your VPS, install Docker and Docker Compose, obtain an SSL certificate, and deploy your application with ease.
+
+# SSH Key Setup from Server to GitHub
+
+This document explains how to generate an SSH key on your server and add it to GitHub for secure access.
+
+## 1. Generate SSH Key Pair on the Server
+
+If you don't have an SSH key pair already, generate one with:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+```
+
+- Press **Enter** to accept the default key location (`~/.ssh/id_rsa`).
+- Set a passphrase if desired (optional).
+
+## 2. Retrieve the Private Key
+
+After generating the key pair, get the private key:
+
+```bash
+cat ~/.ssh/id_rsa
+```
+
+You will see something like this:
+
+```
+-----BEGIN OPENSSH PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQ...
+-----END OPENSSH PRIVATE KEY-----
+```
+
+Copy the entire content.
+
+## 3. Add Private Key to GitHub
+
+1. Go to **GitHub** > Your Repository > **Settings** > **Secrets and Variables** > **Actions**.
+2. Click **New repository secret**.
+3. Set the name to `SSH_PRIVATE_KEY`.
+4. Paste the private key and click **Add secret**.
+
+## 4. Add Public Key to Authorized Keys on the Server
+
+Retrieve the public key and append it directly to `authorized_keys` without needing to copy and paste:
+
+```bash
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+```
+
+## 5. Test SSH Access
+
+From your local machine, test the SSH connection:
+
+```bash
+ssh -i ~/.ssh/id_rsa your-user@your-vps-ip
+```
+
+If it connects without asking for a password, the setup is complete.
+
+## 6. Configure GitHub Actions
+
+In your GitHub Actions workflow file (`deploy.yml`), add these steps:
+
+```yaml
+- name: Setup SSH Key
+  run: |
+    mkdir -p ~/.ssh
+    echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+    ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+```
+
+This allows GitHub Actions to use your private key for SSH access.
+
+## Conclusion
+
+- **Private Key**: Add to GitHub secrets.
+- **Public Key**: Add to `~/.ssh/authorized_keys` on the server.
+- **Test** the SSH connection before running GitHub Actions.
