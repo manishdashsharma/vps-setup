@@ -1,56 +1,17 @@
-# VPS Maintenance System for EasyTechInnovate
+# Complete VPS Maintenance System Documentation
 
-A comprehensive, VPS-level maintenance page system that works independently of Docker, nginx, or any application services. This system provides automatic failover when services crash and manual control for planned maintenance.
+## 📋 System Overview
 
-## 📋 Table of Contents
+This document contains the complete installation and usage guide for the EasyTechInnovate VPS Maintenance System. This system provides automatic failover maintenance pages when Docker containers fail and manual control for planned maintenance.
 
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Method 1: Quick Install (GitHub)](#method-1-quick-install-github)
-  - [Method 2: Manual Installation](#method-2-manual-installation)
-- [Configuration](#configuration)
-- [Adding Automatic Monitoring](#adding-automatic-monitoring)
-- [Usage](#usage)
-- [Testing](#testing)
-- [Monitoring & Logs](#monitoring--logs)
-- [Troubleshooting](#troubleshooting)
-- [Customization](#customization)
-- [Maintenance](#maintenance)
-- [Emergency Procedures](#emergency-procedures)
+### What This System Does
+- **Automatic maintenance pages** when Docker containers crash
+- **Manual maintenance mode** for planned maintenance
+- **VPS-level traffic redirection** using iptables
+- **Professional branded maintenance page** instead of browser errors
+- **Independent operation** - works even when Docker/nginx fail
 
-## 🎯 Overview
-
-This maintenance system provides a robust safety net for your web services. When Docker containers crash, nginx fails, or the entire system becomes unresponsive, visitors will see a professional maintenance page instead of browser errors.
-
-### How It Works
-
-```
-Internet Traffic → VPS → iptables Rules → Maintenance Server (Port 8080)
-                              ↓
-                    (Bypasses Docker/nginx completely)
-```
-
-### Architecture
-
-- **VPS-Level Operation**: Uses iptables to redirect traffic at the network level
-- **Independent Service**: Runs directly on VPS, not in containers
-- **Automatic Detection**: Monitors Docker containers and services
-- **Manual Control**: Simple commands for planned maintenance
-- **Professional Appearance**: Custom branded maintenance page
-
-## ✨ Features
-
-✅ **Automatic failover** when Docker containers crash  
-✅ **Manual control** for planned maintenance  
-✅ **Professional maintenance page** with custom branding  
-✅ **VPS-level traffic redirection** using iptables  
-✅ **Container monitoring** with automatic recovery  
-✅ **Comprehensive logging** and monitoring  
-✅ **Easy installation** with automated setup  
-✅ **Clean uninstall** option available  
-✅ **Emergency procedures** for critical situations  
+---
 
 ## 🔧 Prerequisites
 
@@ -59,9 +20,9 @@ Internet Traffic → VPS → iptables Rules → Maintenance Server (Port 8080)
 - Root/sudo access
 - At least 100MB free disk space
 
-### Software Requirements
+### Required Software
 ```bash
-# Check if you have the required software
+# Check prerequisites
 python3 --version        # Python 3.6+
 which iptables           # iptables for traffic redirection
 systemctl --version      # systemd for service management
@@ -75,31 +36,11 @@ sudo apt update
 sudo apt install python3 iptables systemd curl netcat-openbsd -y
 ```
 
-## 🚀 Installation
+---
 
-### Method 1: Quick Install (GitHub)
+## 🚀 Complete Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/easytechinnovate-maintenance.git
-cd easytechinnovate-maintenance
-
-# Run installer
-chmod +x install.sh
-./install.sh
-
-# The installer will:
-# ✅ Check prerequisites
-# ✅ Create directory structure
-# ✅ Install all files
-# ✅ Set up systemd service
-# ✅ Configure aliases
-# ✅ Test the installation
-```
-
-### Method 2: Manual Installation
-
-#### Step 1: Create Directory Structure
+### Step 1: Create Directory Structure
 
 ```bash
 # Create main maintenance directory
@@ -112,7 +53,9 @@ sudo mkdir -p /opt/maintenance/iptables-backups
 sudo chown -R $USER:$USER /opt/maintenance
 ```
 
-#### Step 2: Create Maintenance HTML Page
+### Step 2: Create Maintenance HTML Page
+
+**File:** `/opt/maintenance/www/index.html`
 
 ```bash
 cat > /opt/maintenance/www/index.html << 'EOF'
@@ -252,7 +195,9 @@ cat > /opt/maintenance/www/index.html << 'EOF'
 EOF
 ```
 
-#### Step 3: Create Python HTTP Server
+### Step 3: Create Python HTTP Server
+
+**File:** `/opt/maintenance/server.py`
 
 ```bash
 cat > /opt/maintenance/server.py << 'EOF'
@@ -285,16 +230,7 @@ class MaintenanceHandler(http.server.SimpleHTTPRequestHandler):
             with open('/opt/maintenance/www/index.html', 'rb') as f:
                 self.wfile.write(f.read())
         except FileNotFoundError:
-            fallback_html = b"""
-            <html>
-            <head><title>Under Maintenance</title></head>
-            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-                <h1>🔧 Under Maintenance</h1>
-                <p>Service temporarily unavailable. Please try again later.</p>
-                <p><small>Maintenance server active</small></p>
-            </body>
-            </html>
-            """
+            fallback_html = b'<html><head><title>Under Maintenance</title></head><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;"><h1>Under Maintenance</h1><p>Service temporarily unavailable. Please try again later.</p><p><small>Maintenance server active</small></p></body></html>'
             self.wfile.write(fallback_html)
     
     def do_POST(self):
@@ -344,7 +280,9 @@ EOF
 chmod +x /opt/maintenance/server.py
 ```
 
-#### Step 4: Create Systemd Service
+### Step 4: Create Systemd Service
+
+**File:** `/etc/systemd/system/maintenance.service`
 
 ```bash
 sudo tee /etc/systemd/system/maintenance.service > /dev/null << 'EOF'
@@ -380,7 +318,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable maintenance.service
 ```
 
-#### Step 5: Create Traffic Control Script
+### Step 5: Create Traffic Control Script
+
+**File:** `/opt/maintenance/traffic-control.sh`
 
 ```bash
 cat > /opt/maintenance/traffic-control.sh << 'EOF'
@@ -447,12 +387,10 @@ enable_maintenance() {
     fi
     
     log_message "✅ Maintenance mode ACTIVE"
-    log_message "🌐 All web traffic (ports 80, 443) -> maintenance server (port $MAINTENANCE_PORT)"
     echo
     echo "🔧 MAINTENANCE MODE ACTIVE"
     echo "🌐 All visitors will see the maintenance page"
     echo "📊 Check server status: systemctl status maintenance.service"
-    echo "📋 Check logs: journalctl -u maintenance.service -f"
 }
 
 disable_maintenance() {
@@ -479,11 +417,9 @@ disable_maintenance() {
     fi
     
     log_message "✅ Maintenance mode DISABLED"
-    log_message "🌐 Normal traffic restored to original services"
     echo
     echo "✅ MAINTENANCE MODE DISABLED"
     echo "🌐 Normal website traffic restored"
-    echo "🔄 Your Docker services should be handling requests now"
 }
 
 status_maintenance() {
@@ -493,7 +429,6 @@ status_maintenance() {
     # Check service status
     if systemctl is-active --quiet maintenance.service; then
         echo "🔧 Maintenance service: RUNNING"
-        echo "📊 Service status: $(systemctl is-active maintenance.service)"
         echo "🌐 Listening on port: $MAINTENANCE_PORT"
         
         # Test if port is responding
@@ -522,27 +457,12 @@ status_maintenance() {
     
     echo
     if [ $redirect_count -gt 0 ]; then
-        echo "🔧 MAINTENANCE MODE: ACTIVE ($redirect_count ports redirected)"
+        echo "🔧 MAINTENANCE MODE: ACTIVE"
         echo "👁️  Visitors see: Maintenance page"
     else
         echo "✅ NORMAL MODE: ACTIVE"
         echo "👁️  Visitors see: Your regular website"
     fi
-    
-    echo
-    echo "📋 RECENT LOG ENTRIES:"
-    if [ -f "$LOG_FILE" ]; then
-        tail -5 "$LOG_FILE"
-    else
-        echo "No log entries found"
-    fi
-}
-
-restart_maintenance() {
-    log_message "🔄 Restarting maintenance mode..."
-    disable_maintenance
-    sleep 2
-    enable_maintenance
 }
 
 case "$1" in
@@ -556,7 +476,9 @@ case "$1" in
         status_maintenance
         ;;
     "restart")
-        restart_maintenance
+        disable_maintenance
+        sleep 2
+        enable_maintenance
         ;;
     "logs")
         if [ -f "$LOG_FILE" ]; then
@@ -579,17 +501,12 @@ case "$1" in
         echo "Usage: $0 {on|off|status|restart|logs|test}"
         echo
         echo "Commands:"
-        echo "  on/enable  - Enable maintenance mode (redirect all web traffic)"
-        echo "  off/disable - Disable maintenance mode (restore normal traffic)"
-        echo "  status     - Check current maintenance status"
+        echo "  on/enable  - Enable maintenance mode"
+        echo "  off/disable - Disable maintenance mode"
+        echo "  status     - Check current status"
         echo "  restart    - Restart maintenance mode"
-        echo "  logs       - Show recent maintenance logs"
-        echo "  test       - Test if maintenance server is responding"
-        echo
-        echo "Examples:"
-        echo "  $0 on      # Enable maintenance mode"
-        echo "  $0 status  # Check what's happening"
-        echo "  $0 off     # Back to normal"
+        echo "  logs       - Show recent logs"
+        echo "  test       - Test server response"
         exit 1
         ;;
 esac
@@ -599,63 +516,9 @@ EOF
 chmod +x /opt/maintenance/traffic-control.sh
 ```
 
-#### Step 6: Create Aliases and Test
+### Step 6: Create Container Monitor (Automatic Detection)
 
-```bash
-# Create convenient aliases
-echo 'alias maintenance="/opt/maintenance/traffic-control.sh"' >> ~/.bashrc
-echo 'alias maintenance="/opt/maintenance/traffic-control.sh"' | sudo tee -a /root/.bashrc
-
-# Source bashrc
-source ~/.bashrc
-
-# Test the basic installation
-sudo systemctl start maintenance.service
-maintenance status
-maintenance test
-sudo systemctl stop maintenance.service
-
-echo "✅ Basic installation complete!"
-```
-
-## ⚙️ Configuration
-
-### Customize Maintenance Page
-
-Edit the maintenance page to match your branding:
-
-```bash
-# Edit the HTML file
-nano /opt/maintenance/www/index.html
-
-# Key elements to customize:
-# - Company name and logo
-# - Contact information
-# - Service names in the grid
-# - Colors and styling
-# - Expected completion time
-```
-
-### Configure Log Rotation
-
-```bash
-# Set up automatic log rotation
-sudo tee /etc/logrotate.d/maintenance > /dev/null << 'EOF'
-/opt/maintenance/logs/*.log {
-    daily
-    rotate 30
-    compress
-    delaycompress
-    missingok
-    notifempty
-    copytruncate
-}
-EOF
-```
-
-## 🤖 Adding Automatic Monitoring
-
-### Step 1: Create Container Monitor Script
+**File:** `/opt/maintenance/container-monitor.sh`
 
 ```bash
 cat > /opt/maintenance/container-monitor.sh << 'EOF'
@@ -667,10 +530,11 @@ LOG_FILE="/opt/maintenance/logs/auto-monitor.log"
 # Critical containers that must be running
 # ⚠️ IMPORTANT: Update these with your actual container names
 CRITICAL_CONTAINERS=(
+    "centralized-nginx"
     "esaytechinnovate-client"
     "freelancer-client" 
     "leadedge-client"
-    "nginx-prod"
+    "hookanalytics-client"
 )
 
 log_message() {
@@ -736,56 +600,9 @@ EOF
 chmod +x /opt/maintenance/container-monitor.sh
 ```
 
-### Step 2: Configure Your Container Names
+### Step 7: Create Status Dashboard
 
-```bash
-# First, check your actual running containers
-docker ps --format "table {{.Names}}\t{{.Status}}"
-
-# Edit the monitor script with your actual container names
-nano /opt/maintenance/container-monitor.sh
-
-# Update the CRITICAL_CONTAINERS array, for example:
-# CRITICAL_CONTAINERS=(
-#     "your-nginx-container-name"
-#     "your-app-container-name"
-#     "your-db-container-name"
-# )
-```
-
-### Step 3: Test Automatic Monitoring
-
-```bash
-# Test the monitor script manually
-/opt/maintenance/container-monitor.sh
-
-# Check if it created a log file
-cat /opt/maintenance/logs/auto-monitor.log
-
-# Test with Docker stopped (to trigger maintenance)
-sudo systemctl stop docker
-/opt/maintenance/container-monitor.sh
-maintenance status
-
-# Restart Docker and test recovery
-sudo systemctl start docker
-sleep 10
-/opt/maintenance/container-monitor.sh
-maintenance status
-```
-
-### Step 4: Enable Automatic Monitoring
-
-```bash
-# Add monitoring to cron (runs every 30 seconds)
-(sudo crontab -l 2>/dev/null; echo "* * * * * /opt/maintenance/container-monitor.sh") | sudo crontab -
-(sudo crontab -l 2>/dev/null; echo "* * * * * sleep 30; /opt/maintenance/container-monitor.sh") | sudo crontab -
-
-# Verify cron jobs were added
-sudo crontab -l
-```
-
-### Step 5: Create Monitoring Dashboard
+**File:** `/opt/maintenance/status-check.sh`
 
 ```bash
 cat > /opt/maintenance/status-check.sh << 'EOF'
@@ -798,8 +615,8 @@ echo "=================================================="
 echo "📊 Docker Service: $(systemctl is-active docker)"
 
 # Container Status
-echo "📦 Container Status:"
-containers=("esaytechinnovate-client" "freelancer-client" "leadedge-client" "nginx-prod")
+echo "📦 Critical Container Status:"
+containers=("centralized-nginx" "esaytechinnovate-client" "freelancer-client" "leadedge-client" "hookanalytics-client")
 for container in "${containers[@]}"; do
     if docker ps --format "{{.Names}}" | grep -q "^$container$"; then
         echo "  ✅ $container: RUNNING"
@@ -848,82 +665,120 @@ EOF
 chmod +x /opt/maintenance/status-check.sh
 ```
 
-### Step 6: Add Monitoring Aliases
+### Step 8: Set Up Aliases and Cron Jobs
 
 ```bash
-# Add convenient aliases
-echo 'alias monitor="/opt/maintenance/status-check.sh"' >> ~/.bashrc
-echo 'alias monitor="/opt/maintenance/status-check.sh"' | sudo tee -a /root/.bashrc
-echo 'alias maintenance-logs="tail -f /opt/maintenance/logs/auto-monitor.log"' >> ~/.bashrc
-echo 'alias maintenance-logs="tail -f /opt/maintenance/logs/auto-monitor.log"' | sudo tee -a /root/.bashrc
+# Create convenient aliases
+echo 'alias maintenance="/opt/maintenance/traffic-control.sh"' >> /root/.bashrc
+echo 'alias monitor="/opt/maintenance/status-check.sh"' >> /root/.bashrc
+echo 'alias maintenance-logs="tail -f /opt/maintenance/logs/auto-monitor.log"' >> /root/.bashrc
 
-# Reload bashrc
-source ~/.bashrc
+# Source bashrc
+source /root/.bashrc
+
+# Add automatic monitoring to cron (runs every 30 seconds)
+(crontab -l 2>/dev/null; echo "* * * * * /opt/maintenance/container-monitor.sh") | crontab -
+(crontab -l 2>/dev/null; echo "* * * * * sleep 30; /opt/maintenance/container-monitor.sh") | crontab -
+
+# Set up log rotation
+sudo tee /etc/logrotate.d/maintenance > /dev/null << 'EOF'
+/opt/maintenance/logs/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
+EOF
 ```
 
-## 🎮 Usage
+---
 
-### Basic Commands
+## 🎮 Usage Commands
+
+### Basic Control
 
 ```bash
-# Manual control
-sudo maintenance on        # Enable maintenance mode
-sudo maintenance off       # Disable maintenance mode
-maintenance status         # Check current status
-maintenance test           # Test server response
-maintenance logs           # View recent logs
-maintenance restart        # Restart maintenance mode
+# Manual maintenance control
+/opt/maintenance/traffic-control.sh on     # Enable maintenance mode
+/opt/maintenance/traffic-control.sh off    # Disable maintenance mode
+/opt/maintenance/traffic-control.sh status # Check current status
+/opt/maintenance/traffic-control.sh test   # Test maintenance server
+/opt/maintenance/traffic-control.sh logs   # View recent logs
+/opt/maintenance/traffic-control.sh restart # Restart maintenance mode
+```
 
-# Monitoring
-monitor                    # Full system status report
-maintenance-logs           # Watch auto-monitor in real-time
+### Monitoring Commands
+
+```bash
+# System overview
+/opt/maintenance/status-check.sh           # Complete system status
+
+# Real-time monitoring
+tail -f /opt/maintenance/logs/auto-monitor.log    # Watch automatic monitoring
+tail -f /opt/maintenance/logs/maintenance.log     # Watch manual control logs
+sudo journalctl -u maintenance.service -f         # Watch service logs
 
 # Service management
-sudo systemctl status maintenance.service
-sudo journalctl -u maintenance.service -f
+sudo systemctl status maintenance.service   # Check service status
+sudo systemctl start maintenance.service    # Start service manually
+sudo systemctl stop maintenance.service     # Stop service manually
+sudo systemctl restart maintenance.service  # Restart service
 ```
 
-### Usage Scenarios
+### Container Monitoring
 
-#### Planned Maintenance
 ```bash
-# Before maintenance work
-sudo maintenance on
-# Visitors now see maintenance page
+# Check your containers (update the container-monitor.sh with these names)
+docker ps --format "table {{.Names}}\t{{.Status}}"
 
-# Do your maintenance work...
+# Test automatic monitoring
+docker stop [container-name]    # Should trigger maintenance mode
+docker start [container-name]   # Should disable maintenance mode
 
-# After maintenance work
-sudo maintenance off
-# Visitors now see regular website
+# View cron jobs
+crontab -l                      # List automatic monitoring jobs
 ```
 
-#### Emergency Response
-```bash
-# Check what's happening
-monitor
+---
 
-# If needed, force maintenance mode
-sudo maintenance on
+## 📁 File Structure
 
-# Check system status
-maintenance status
+```
+/opt/maintenance/
+├── www/
+│   └── index.html              # Maintenance page (customize this)
+├── logs/
+│   ├── maintenance.log         # Manual control logs
+│   └── auto-monitor.log        # Automatic monitoring logs
+├── iptables-backups/           # iptables rule backups
+├── server.py                   # Python HTTP server
+├── traffic-control.sh          # Main control script
+├── container-monitor.sh        # Container monitoring script
+└── status-check.sh            # System status dashboard
 
-# When fixed
-sudo maintenance off
+/etc/systemd/system/
+└── maintenance.service         # Systemd service file
+
+/etc/logrotate.d/
+└── maintenance                 # Log rotation configuration
 ```
 
-## 🧪 Testing
+---
+
+## 🧪 Testing Procedures
 
 ### Test 1: Basic Functionality
 
 ```bash
 # Test manual control
-sudo maintenance on
-maintenance status          # Should show ACTIVE
-curl -I http://localhost    # Should return 503
-sudo maintenance off
-maintenance status          # Should show INACTIVE
+/opt/maintenance/traffic-control.sh on
+/opt/maintenance/traffic-control.sh status    # Should show ACTIVE
+curl -I http://localhost                       # Should return 503
+/opt/maintenance/traffic-control.sh off
+/opt/maintenance/traffic-control.sh status    # Should show INACTIVE
 ```
 
 ### Test 2: Service Management
@@ -931,8 +786,8 @@ maintenance status          # Should show INACTIVE
 ```bash
 # Test systemd service
 sudo systemctl start maintenance.service
-systemctl is-active maintenance.service    # Should show "active"
-curl http://localhost:8080                 # Should return maintenance page
+systemctl is-active maintenance.service       # Should show "active"
+curl http://localhost:8080                     # Should return maintenance page
 sudo systemctl stop maintenance.service
 ```
 
@@ -942,42 +797,148 @@ sudo systemctl stop maintenance.service
 # Test Docker service failure
 sudo systemctl stop docker
 sleep 30
-maintenance status          # Should show ACTIVE (auto-enabled)
+/opt/maintenance/traffic-control.sh status    # Should show ACTIVE (auto-enabled)
 
 # Test recovery
 sudo systemctl start docker
 sleep 60
-maintenance status          # Should show INACTIVE (auto-disabled)
+/opt/maintenance/traffic-control.sh status    # Should show INACTIVE (auto-disabled)
 ```
 
 ### Test 4: Container Failure Simulation
 
 ```bash
 # Stop a critical container
-docker stop freelancer-client
+docker stop centralized-nginx
 sleep 30
-maintenance status          # Should show ACTIVE
+/opt/maintenance/traffic-control.sh status    # Should show ACTIVE
 
 # Restart the container
-docker start freelancer-client
+docker start centralized-nginx
 sleep 60
-maintenance status          # Should show INACTIVE
+/opt/maintenance/traffic-control.sh status    # Should show INACTIVE
 ```
 
-### Test 5: Emergency Scenarios
+---
+
+## 🔧 Customization
+
+### Update Container Names
+
+1. **Check your actual containers:**
+   ```bash
+   docker ps --format "table {{.Names}}\t{{.Status}}"
+   ```
+
+2. **Edit the container monitor:**
+   ```bash
+   nano /opt/maintenance/container-monitor.sh
+   ```
+
+3. **Update the CRITICAL_CONTAINERS array:**
+   ```bash
+   CRITICAL_CONTAINERS=(
+       "your-nginx-container-name"
+       "your-app-container-name"
+       "your-database-container-name"
+   )
+   ```
+
+### Customize Maintenance Page
+
+**Edit:** `/opt/maintenance/www/index.html`
+
+Key areas to customize:
+- Company name and logo (`.logo` div)
+- Contact information (`.contact` div)
+- Service names (`.service` divs)
+- Colors and styling (CSS section)
+- Expected completion time (`.eta` span)
+
+### Adjust Monitoring Frequency
 
 ```bash
-# Test when everything fails
-sudo systemctl stop docker nginx
-sudo python3 /opt/maintenance/server.py 80
-# Should serve maintenance page on port 80
+# Current: Every 30 seconds
+# To change to every 60 seconds:
+crontab -e
+# Remove the "sleep 30" line, keep only:
+# * * * * * /opt/maintenance/container-monitor.sh
 
-# Test iptables backup and restore
-ls /opt/maintenance/iptables-backups/
-# Should show backup files when maintenance is enabled
+# To change to every 2 minutes:
+crontab -e
+# Change to:
+# */2 * * * * /opt/maintenance/container-monitor.sh
 ```
 
-## 📊 Monitoring & Logs
+---
+
+## 🚨 Emergency Procedures
+
+### Emergency Maintenance Activation
+
+```bash
+# If maintenance script fails
+sudo python3 /opt/maintenance/server.py 80
+
+# If Python fails, use simple HTML
+sudo systemctl stop nginx docker
+echo "<h1>Under Maintenance</h1><p>Service temporarily unavailable.</p>" > /var/www/html/index.html
+sudo python3 -m http.server 80
+```
+
+### Emergency Disable
+
+```bash
+# Remove all iptables redirects
+sudo iptables -t nat -F PREROUTING
+
+# Stop maintenance service
+sudo systemctl stop maintenance.service
+
+# Restart normal services
+sudo systemctl start docker nginx
+```
+
+### Nuclear Option
+
+```bash
+# If system is completely broken
+sudo reboot
+
+# After reboot, maintenance mode will be disabled
+# Your normal services should start automatically
+```
+
+### Recovery Procedures
+
+#### Reset maintenance system
+
+```bash
+# Stop all maintenance components
+sudo systemctl stop maintenance.service
+sudo iptables -t nat -F PREROUTING
+sudo iptables -D INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null
+
+# Clear logs
+sudo rm -rf /opt/maintenance/logs/*
+
+# Restart fresh
+/opt/maintenance/traffic-control.sh status
+```
+
+#### Restore iptables from backup
+
+```bash
+# List available backups
+ls -la /opt/maintenance/iptables-backups/
+
+# Restore from specific backup
+sudo iptables-restore < /opt/maintenance/iptables-backups/iptables-backup-TIMESTAMP.rules
+```
+
+---
+
+## 📊 Log Management
 
 ### Log Locations
 
@@ -992,26 +953,7 @@ sudo journalctl -u maintenance.service     # Systemd service logs
 sudo tail -f /var/log/cron                # Cron job logs
 ```
 
-### Monitoring Commands
-
-```bash
-# Real-time monitoring
-maintenance-logs                           # Auto-monitor activity
-sudo journalctl -u maintenance.service -f # Service logs
-tail -f /opt/maintenance/logs/*.log       # All maintenance logs
-
-# Status checks
-monitor                                    # Complete system overview
-maintenance status                         # Maintenance system status
-sudo systemctl status maintenance.service # Service detailed status
-sudo crontab -l                          # Check cron jobs
-
-# Network status
-sudo netstat -tlnp | grep :8080          # Check maintenance port
-sudo iptables -t nat -L PREROUTING       # Check redirect rules
-```
-
-### Log Analysis
+### Log Analysis Commands
 
 ```bash
 # Find auto-enable events
@@ -1025,13 +967,44 @@ grep "ERROR\|FAILED\|❌" /opt/maintenance/logs/*.log
 
 # View maintenance history
 cat /opt/maintenance/logs/maintenance.log | grep "ACTIVE\|DISABLED"
+
+# Real-time log monitoring
+tail -f /opt/maintenance/logs/*.log
 ```
 
-## 🔧 Troubleshooting
+### Log Rotation
+
+Log rotation is automatically configured to:
+- Rotate daily
+- Keep 30 days of logs
+- Compress old logs
+- Handle missing log files gracefully
+
+```bash
+# Check log rotation configuration
+cat /etc/logrotate.d/maintenance
+
+# Force log rotation (for testing)
+sudo logrotate -f /etc/logrotate.d/maintenance
+
+# Check log sizes
+du -sh /opt/maintenance/logs/*
+```
+
+---
+
+## 🔍 Troubleshooting
 
 ### Common Issues
 
 #### Issue: Maintenance server won't start
+
+**Symptoms:**
+- Service fails to start
+- Port 8080 not responding
+- Service shows "failed" status
+
+**Debugging:**
 ```bash
 # Check Python installation
 python3 --version
@@ -1046,7 +1019,19 @@ sudo journalctl -u maintenance.service --no-pager
 cd /opt/maintenance && python3 server.py 8080
 ```
 
+**Solutions:**
+1. Install Python 3: `sudo apt install python3`
+2. Kill process using port 8080: `sudo kill $(sudo lsof -t -i:8080)`
+3. Check file permissions: `ls -la /opt/maintenance/`
+
 #### Issue: Traffic not redirecting
+
+**Symptoms:**
+- Maintenance mode shows ACTIVE but visitors see normal site
+- iptables rules not working
+- Redirect not happening
+
+**Debugging:**
 ```bash
 # Check iptables rules
 sudo iptables -t nat -L PREROUTING
@@ -1055,16 +1040,28 @@ sudo iptables -t nat -L PREROUTING
 curl http://localhost:8080
 
 # Verify maintenance mode is enabled
-maintenance status
+/opt/maintenance/traffic-control.sh status
 
 # Check firewall
 sudo ufw status
 ```
 
+**Solutions:**
+1. Disable UFW: `sudo ufw disable`
+2. Flush and recreate iptables rules: `/opt/maintenance/traffic-control.sh restart`
+3. Check for conflicting rules: `sudo iptables -t nat -L`
+
 #### Issue: Automatic monitoring not working
+
+**Symptoms:**
+- Containers fail but maintenance doesn't activate
+- No logs in auto-monitor.log
+- Cron jobs not running
+
+**Debugging:**
 ```bash
 # Check cron jobs
-sudo crontab -l
+crontab -l
 
 # Test monitor script manually
 /opt/maintenance/container-monitor.sh
@@ -1074,9 +1071,23 @@ tail /opt/maintenance/logs/auto-monitor.log
 
 # Check cron service
 sudo systemctl status cron
+
+# Check cron logs
+sudo tail -f /var/log/cron
 ```
 
+**Solutions:**
+1. Add cron jobs: Follow Step 8 commands
+2. Fix container names: Edit `/opt/maintenance/container-monitor.sh`
+3. Start cron service: `sudo systemctl start cron`
+
 #### Issue: Container names not matching
+
+**Symptoms:**
+- Auto-monitor always shows containers failed
+- Wrong container names in logs
+
+**Solution:**
 ```bash
 # List actual running containers
 docker ps --format "table {{.Names}}\t{{.Status}}"
@@ -1084,394 +1095,472 @@ docker ps --format "table {{.Names}}\t{{.Status}}"
 # Edit monitor script with correct names
 nano /opt/maintenance/container-monitor.sh
 
+# Update CRITICAL_CONTAINERS array with exact names
 # Test with updated names
 /opt/maintenance/container-monitor.sh
 ```
 
-### Recovery Procedures
+#### Issue: Permission denied errors
 
-#### Reset maintenance system
+**Symptoms:**
+- Scripts fail with permission errors
+- Cannot write to log files
+- Service fails to start
+
+**Solution:**
 ```bash
-# Stop all maintenance components
-sudo systemctl stop maintenance.service
-sudo iptables -t nat -F PREROUTING
-sudo iptables -D INPUT -p tcp --dport 8080 -j ACCEPT 2>/dev/null
+# Fix ownership
+sudo chown -R root:root /opt/maintenance
 
-# Clear logs
-sudo rm -rf /opt/maintenance/logs/*
+# Fix permissions
+sudo chmod +x /opt/maintenance/*.sh
+sudo chmod +x /opt/maintenance/server.py
 
-# Restart fresh
-maintenance status
+# Fix log directory permissions
+sudo mkdir -p /opt/maintenance/logs
+sudo chmod 755 /opt/maintenance/logs
 ```
 
-#### Restore iptables from backup
-```bash
-# List available backups
-ls -la /opt/maintenance/iptables-backups/
+---
 
-# Restore from specific backup
-sudo iptables-restore < /opt/maintenance/iptables-backups/iptables-backup-TIMESTAMP.rules
-```
+## ⚙️ Advanced Configuration
 
-#### Emergency disable
-```bash
-# If maintenance control script fails
-sudo iptables -t nat -F PREROUTING
-sudo systemctl stop maintenance.service
+### Custom Notifications
 
-# If everything fails
-sudo reboot
-```
-
-## 🎨 Customization
-
-### Customize Maintenance Page
+Add Slack/Discord notifications when maintenance mode activates:
 
 ```bash
-# Edit the main maintenance page
-nano /opt/maintenance/www/index.html
-
-# Key customization areas:
-# 1. Company branding (.logo)
-# 2. Colors (CSS variables)
-# 3. Service names (.service divs)
-# 4. Contact information (.contact)
-# 5. Expected completion time (.eta)
-```
-
-### Create Service-Specific Pages
-
-```bash
-# Create subdirectories for different services
-mkdir -p /opt/maintenance/www/{freelancer,leadedge,analytics}
-
-# Copy and customize for each service
-cp /opt/maintenance/www/index.html /opt/maintenance/www/freelancer/
-cp /opt/maintenance/www/index.html /opt/maintenance/www/leadedge/
-
-# Edit each page for service-specific content
-nano /opt/maintenance/www/freelancer/index.html
-nano /opt/maintenance/www/leadedge/index.html
-```
-
-### Adjust Monitoring Frequency
-
-```bash
-# Current: Every 30 seconds
-# To change to every 60 seconds:
-sudo crontab -e
-# Remove the "sleep 30" line, keep only:
-# * * * * * /opt/maintenance/container-monitor.sh
-
-# To change to every 2 minutes:
-sudo crontab -e
-# Change to:
-# */2 * * * * /opt/maintenance/container-monitor.sh
-```
-
-### Add Custom Containers
-
-```bash
-# Edit the container monitor
-nano /opt/maintenance/container-monitor.sh
-
-# Add your containers to CRITICAL_CONTAINERS array:
-CRITICAL_CONTAINERS=(
-    "your-nginx-container"
-    "your-app-container"
-    "your-database-container"
-    "your-cache-container"
-)
-```
-
-### Configure Notifications
-
-```bash
-# Add Slack notifications to container monitor
+# Edit container monitor
 nano /opt/maintenance/container-monitor.sh
 
 # Add after log_message function:
 send_notification() {
     local message="$1"
+    # Slack webhook
     if [ -n "$SLACK_WEBHOOK_URL" ]; then
         curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"'"$message"'"}' \
             "$SLACK_WEBHOOK_URL"
     fi
+    
+    # Discord webhook
+    if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+        curl -X POST -H 'Content-type: application/json' \
+            --data '{"content":"'"$message"'"}' \
+            "$DISCORD_WEBHOOK_URL"
+    fi
 }
 
-# Add webhook URL
+# Add webhook URLs
 SLACK_WEBHOOK_URL="https://hooks.slack.com/your/webhook/url"
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/your/webhook/url"
 
 # Call in main function:
-send_notification "🔧 Maintenance mode auto-enabled"
+if [ "$containers_healthy" = false ] && [ "$maintenance_active" = false ]; then
+    log_message "🔧 Auto-enabling maintenance - critical containers failed"
+    send_notification "🚨 EasyTechInnovate: Maintenance mode auto-enabled due to container failures"
+    $MAINTENANCE_SCRIPT on
+fi
 ```
-
-## 🔄 Maintenance
-
-### Daily Tasks
-
-```bash
-# Check system status
-monitor
-
-# Review logs for issues
-tail -20 /opt/maintenance/logs/*.log
-
-# Verify cron jobs are running
-sudo systemctl status cron
-```
-
-### Weekly Tasks
-
-```bash
-# Check log file sizes
-du -sh /opt/maintenance/logs/*
-
-# Clean old iptables backups (keep last 30 days)
-find /opt/maintenance/iptables-backups/ -mtime +30 -delete
-
-# Test emergency procedures
-sudo maintenance on
-sleep 5
-sudo maintenance off
-```
-
-### Monthly Tasks
-
-```bash
-# Update container monitoring list
-docker ps --format "table {{.Names}}\t{{.Status}}"
-nano /opt/maintenance/container-monitor.sh
-
-# Review and update maintenance page content
-nano /opt/maintenance/www/index.html
-
-# Test automatic monitoring with controlled failures
-```
-
-### Log Rotation Management
-
-```bash
-# Check log rotation configuration
-cat /etc/logrotate.d/maintenance
-
-# Force log rotation (for testing)
-sudo logrotate -f /etc/logrotate.d/maintenance
-
-# Check rotated logs
-ls -la /opt/maintenance/logs/
-```
-
-## 🚨 Emergency Procedures
-
-### When Everything Fails
-
-#### Emergency Maintenance Activation
-```bash
-# If maintenance script fails
-sudo python3 /opt/maintenance/server.py 80
-
-# If Python fails
-sudo systemctl stop nginx docker
-echo "Under Maintenance" > /var/www/html/index.html
-sudo python3 -m http.server 80
-```
-
-#### Emergency Disable
-```bash
-# Remove all iptables redirects
-sudo iptables -t nat -F PREROUTING
-
-# Stop maintenance service
-sudo systemctl stop maintenance.service
-
-# Restart normal services
-sudo systemctl start docker nginx
-```
-
-#### Nuclear Option
-```bash
-# If system is completely broken
-sudo reboot
-
-# After reboot, maintenance mode will be disabled
-# Your normal services should start automatically
-```
-
-### Recovery Checklist
-
-When recovering from major issues:
-
-1. **Check service status**
-   ```bash
-   systemctl status docker nginx maintenance
-   ```
-
-2. **Verify container health**
-   ```bash
-   docker ps
-   monitor
-   ```
-
-3. **Check network connectivity**
-   ```bash
-   curl http://localhost
-   curl http://localhost:8080
-   ```
-
-4. **Review logs**
-   ```bash
-   maintenance logs
-   maintenance-logs
-   sudo journalctl -u maintenance.service --since "1 hour ago"
-   ```
-
-5. **Test maintenance system**
-   ```bash
-   maintenance test
-   maintenance status
-   ```
-
-## 📚 Advanced Features
 
 ### Health Check API
 
-Add a health check endpoint to monitor the maintenance system externally:
+Add a health check endpoint for external monitoring:
 
 ```bash
-# Add to server.py (in the do_GET method)
+# Edit server.py, add this in the do_GET method before try block:
 if self.path == '/health':
     self.send_response(200)
     self.send_header('Content-Type', 'application/json')
+    self.send_header('Cache-Control', 'no-cache')
     self.end_headers()
-    health_data = {
-        "status": "maintenance_active",
-        "timestamp": datetime.now().isoformat(),
-        "server": "maintenance"
-    }
-    self.wfile.write(json.dumps(health_data).encode())
+    health_data = '{"status":"maintenance_active","timestamp":"' + datetime.now().isoformat() + '","server":"maintenance"}'
+    self.wfile.write(health_data.encode())
     return
 ```
 
-### Integration with External Monitoring
-
-```bash
-# Create webhook endpoint for external monitoring
-cat > /opt/maintenance/webhook-handler.sh << 'EOF'
-#!/bin/bash
-# Handle webhooks from external monitoring services
-
-case "$1" in
-    "enable")
-        /opt/maintenance/traffic-control.sh on
-        ;;
-    "disable")
-        /opt/maintenance/traffic-control.sh off
-        ;;
-    "status")
-        /opt/maintenance/traffic-control.sh status
-        ;;
-esac
-EOF
-
-chmod +x /opt/maintenance/webhook-handler.sh
-```
-
 ### Scheduled Maintenance
+
+Set up automatic maintenance windows:
 
 ```bash
 # Create scheduled maintenance script
 cat > /opt/maintenance/scheduled-maintenance.sh << 'EOF'
 #!/bin/bash
-# Scheduled maintenance example
+# Scheduled maintenance windows
 
-# Enable maintenance at specific time
-if [ "$(date +%H:%M)" = "02:00" ]; then
+# Enable maintenance every Sunday at 2 AM
+if [ "$(date +%u)" -eq 7 ] && [ "$(date +%H)" -eq 2 ] && [ "$(date +%M)" -eq 0 ]; then
     /opt/maintenance/traffic-control.sh on
-    echo "Scheduled maintenance started at $(date)"
+    echo "$(date): Scheduled maintenance started" >> /opt/maintenance/logs/scheduled.log
 fi
 
-# Disable maintenance after maintenance window
-if [ "$(date +%H:%M)" = "04:00" ]; then
+# Disable maintenance every Sunday at 4 AM
+if [ "$(date +%u)" -eq 7 ] && [ "$(date +%H)" -eq 4 ] && [ "$(date +%M)" -eq 0 ]; then
     /opt/maintenance/traffic-control.sh off
-    echo "Scheduled maintenance ended at $(date)"
+    echo "$(date): Scheduled maintenance ended" >> /opt/maintenance/logs/scheduled.log
 fi
 EOF
 
 chmod +x /opt/maintenance/scheduled-maintenance.sh
 
-# Add to cron for scheduled maintenance
-echo "0 2 * * 0 /opt/maintenance/scheduled-maintenance.sh" | sudo crontab -
-echo "0 4 * * 0 /opt/maintenance/scheduled-maintenance.sh" | sudo crontab -
+# Add to cron (check every minute during maintenance window)
+echo "0 2-4 * * 0 /opt/maintenance/scheduled-maintenance.sh" | crontab -
 ```
 
-## 📞 Support & Contact
+### Multiple Environment Support
 
-### Getting Help
-
-1. **Check logs first**: `maintenance logs` and `maintenance-logs`
-2. **Review this documentation**: Most issues are covered here
-3. **Test manually**: Use `maintenance test` and `monitor`
-4. **Check system resources**: `df -h`, `free -m`, `top`
-
-### Reporting Issues
-
-When reporting issues, include:
+Support different maintenance pages for different environments:
 
 ```bash
-# System information
-uname -a
-python3 --version
-docker --version
+# Create environment-specific pages
+mkdir -p /opt/maintenance/www/{staging,production,development}
 
-# Service status
-systemctl status maintenance.service
-maintenance status
-monitor
+# Copy base page to each environment
+cp /opt/maintenance/www/index.html /opt/maintenance/www/staging/
+cp /opt/maintenance/www/index.html /opt/maintenance/www/production/
+cp /opt/maintenance/www/index.html /opt/maintenance/www/development/
 
-# Recent logs
-maintenance logs
-tail -20 /opt/maintenance/logs/auto-monitor.log
+# Edit server.py to serve different pages based on Host header
+# Add this logic in the do_GET method:
 ```
 
-## 📄 License
+---
 
-MIT License - This software is provided as-is for educational and production use.
+## 🔐 Security Considerations
+
+### File Permissions
+
+```bash
+# Secure file permissions
+sudo chmod 750 /opt/maintenance
+sudo chmod 640 /opt/maintenance/logs/*.log
+sudo chmod 750 /opt/maintenance/*.sh
+sudo chmod 750 /opt/maintenance/server.py
+sudo chmod 644 /opt/maintenance/www/index.html
+```
+
+### iptables Security
+
+```bash
+# Backup iptables rules before maintenance system
+sudo iptables-save > /root/iptables-backup-before-maintenance.rules
+
+# Restrict maintenance port access (optional)
+sudo iptables -A INPUT -p tcp --dport 8080 -s 127.0.0.1 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 8080 -j DROP
+```
+
+### Log Security
+
+```bash
+# Restrict log access
+sudo chmod 640 /opt/maintenance/logs/*.log
+sudo chown root:adm /opt/maintenance/logs/*.log
+
+# Set up log monitoring for security events
+grep "FAILED\|ERROR\|ATTACK" /opt/maintenance/logs/*.log
+```
+
+---
+
+## 📈 Performance Optimization
+
+### Resource Usage
+
+```bash
+# Monitor resource usage
+sudo systemctl status maintenance.service
+ps aux | grep maintenance
+netstat -tlnp | grep :8080
+
+# Optimize Python server memory usage
+# Edit server.py to add memory limits if needed
+```
+
+### Log Management
+
+```bash
+# Compress old logs more aggressively
+sudo sed -i 's/rotate 30/rotate 7/' /etc/logrotate.d/maintenance
+
+# Clean old iptables backups
+find /opt/maintenance/iptables-backups/ -mtime +7 -delete
+```
+
+---
+
+## 🔄 Backup and Restore
+
+### Complete System Backup
+
+```bash
+# Create backup script
+cat > /opt/maintenance/backup-maintenance-system.sh << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/root/maintenance-backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+
+# Backup files
+cp -r /opt/maintenance "$BACKUP_DIR/"
+cp /etc/systemd/system/maintenance.service "$BACKUP_DIR/"
+cp /etc/logrotate.d/maintenance "$BACKUP_DIR/"
+
+# Backup cron jobs
+crontab -l > "$BACKUP_DIR/crontab-backup.txt"
+
+# Backup current iptables
+iptables-save > "$BACKUP_DIR/iptables-current.rules"
+
+echo "Backup created: $BACKUP_DIR"
+tar -czf "${BACKUP_DIR}.tar.gz" -C "$(dirname "$BACKUP_DIR")" "$(basename "$BACKUP_DIR")"
+rm -rf "$BACKUP_DIR"
+echo "Compressed backup: ${BACKUP_DIR}.tar.gz"
+EOF
+
+chmod +x /opt/maintenance/backup-maintenance-system.sh
+```
+
+### System Restore
+
+```bash
+# Create restore script
+cat > /opt/maintenance/restore-maintenance-system.sh << 'EOF'
+#!/bin/bash
+BACKUP_FILE="$1"
+
+if [ -z "$BACKUP_FILE" ]; then
+    echo "Usage: $0 /path/to/backup.tar.gz"
+    exit 1
+fi
+
+echo "Restoring from: $BACKUP_FILE"
+
+# Extract backup
+TEMP_DIR="/tmp/maintenance-restore-$"
+mkdir -p "$TEMP_DIR"
+tar -xzf "$BACKUP_FILE" -C "$TEMP_DIR"
+
+# Find the backup directory
+BACKUP_DIR=$(find "$TEMP_DIR" -name "maintenance-backup-*" -type d | head -1)
+
+if [ -z "$BACKUP_DIR" ]; then
+    echo "Invalid backup file"
+    exit 1
+fi
+
+# Stop current system
+systemctl stop maintenance.service 2>/dev/null || true
+iptables -t nat -F PREROUTING 2>/dev/null || true
+
+# Restore files
+cp -r "$BACKUP_DIR/opt/maintenance" /opt/
+cp "$BACKUP_DIR/maintenance.service" /etc/systemd/system/
+cp "$BACKUP_DIR/maintenance" /etc/logrotate.d/
+
+# Restore permissions
+chmod +x /opt/maintenance/*.sh /opt/maintenance/server.py
+chown -R $USER:$USER /opt/maintenance
+
+# Reload systemd
+systemctl daemon-reload
+systemctl enable maintenance.service
+
+# Restore cron jobs
+crontab "$BACKUP_DIR/crontab-backup.txt"
+
+# Cleanup
+rm -rf "$TEMP_DIR"
+
+echo "Restore completed successfully"
+echo "Test with: /opt/maintenance/traffic-control.sh status"
+EOF
+
+chmod +x /opt/maintenance/restore-maintenance-system.sh
+```
+
+---
+
+## 📞 Support and Maintenance
+
+### Health Monitoring
+
+```bash
+# Create health check script for external monitoring
+cat > /opt/maintenance/health-check.sh << 'EOF'
+#!/bin/bash
+# Health check for external monitoring systems
+
+# Check if maintenance service can start
+if ! systemctl is-enabled --quiet maintenance.service; then
+    echo "CRITICAL: Maintenance service not enabled"
+    exit 2
+fi
+
+# Check if container monitor is in cron
+if ! crontab -l | grep -q "container-monitor.sh"; then
+    echo "WARNING: Container monitoring not scheduled"
+    exit 1
+fi
+
+# Check if iptables commands work
+if ! iptables -t nat -L PREROUTING >/dev/null 2>&1; then
+    echo "CRITICAL: iptables not accessible"
+    exit 2
+fi
+
+# Check if maintenance files exist
+for file in /opt/maintenance/server.py /opt/maintenance/traffic-control.sh /opt/maintenance/container-monitor.sh; do
+    if [ ! -f "$file" ]; then
+        echo "CRITICAL: Missing file $file"
+        exit 2
+    fi
+done
+
+echo "OK: Maintenance system healthy"
+exit 0
+EOF
+
+chmod +x /opt/maintenance/health-check.sh
+```
+
+### Update Procedures
+
+```bash
+# Create update script for maintenance system
+cat > /opt/maintenance/update-maintenance-system.sh << 'EOF'
+#!/bin/bash
+# Update maintenance system components
+
+echo "🔄 Updating maintenance system..."
+
+# Backup current system
+/opt/maintenance/backup-maintenance-system.sh
+
+# Update container names (interactive)
+echo "📦 Current monitored containers:"
+grep "CRITICAL_CONTAINERS=" /opt/maintenance/container-monitor.sh
+
+echo "🔍 Current running containers:"
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+read -p "Update container monitoring? (y/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    nano /opt/maintenance/container-monitor.sh
+fi
+
+# Update maintenance page
+read -p "Update maintenance page? (y/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    nano /opt/maintenance/www/index.html
+fi
+
+# Test updated system
+echo "🧪 Testing updated system..."
+/opt/maintenance/traffic-control.sh test
+/opt/maintenance/container-monitor.sh
+
+echo "✅ Update completed"
+EOF
+
+chmod +x /opt/maintenance/update-maintenance-system.sh
+```
+
+---
+
+## 🎯 Quick Reference
+
+### Essential Commands Cheat Sheet
+
+```bash
+# Manual Control
+/opt/maintenance/traffic-control.sh on     # Enable maintenance
+/opt/maintenance/traffic-control.sh off    # Disable maintenance  
+/opt/maintenance/traffic-control.sh status # Check status
+
+# System Overview
+/opt/maintenance/status-check.sh           # Complete system status
+
+# Monitoring
+tail -f /opt/maintenance/logs/auto-monitor.log    # Watch auto-monitoring
+tail -f /opt/maintenance/logs/maintenance.log     # Watch manual actions
+
+# Service Control
+sudo systemctl status maintenance.service   # Check service
+sudo systemctl start maintenance.service    # Start service
+sudo systemctl stop maintenance.service     # Stop service
+
+# Emergency Commands
+sudo python3 /opt/maintenance/server.py 80  # Emergency activation
+sudo iptables -t nat -F PREROUTING          # Emergency disable
+
+# Container Monitoring
+docker ps --format "table {{.Names}}\t{{.Status}}"  # List containers
+/opt/maintenance/container-monitor.sh               # Test monitoring
+
+# Log Analysis
+grep "Auto-enabling" /opt/maintenance/logs/auto-monitor.log  # Find auto-activations
+grep "ACTIVE\|DISABLED" /opt/maintenance/logs/maintenance.log # Maintenance history
+```
+
+### File Quick Reference
+
+| File | Purpose | Location |
+|------|---------|----------|
+| `index.html` | Maintenance page | `/opt/maintenance/www/` |
+| `server.py` | HTTP server | `/opt/maintenance/` |
+| `traffic-control.sh` | Main control | `/opt/maintenance/` |
+| `container-monitor.sh` | Auto-monitoring | `/opt/maintenance/` |
+| `status-check.sh` | System dashboard | `/opt/maintenance/` |
+| `maintenance.service` | Systemd service | `/etc/systemd/system/` |
+| `maintenance.log` | Control logs | `/opt/maintenance/logs/` |
+| `auto-monitor.log` | Monitor logs | `/opt/maintenance/logs/` |
+
+### Port Reference
+
+| Port | Purpose | Access |
+|------|---------|--------|
+| 8080 | Maintenance server | Internal only |
+| 80 | HTTP traffic | Redirected to 8080 during maintenance |
+| 443 | HTTPS traffic | Redirected to 8080 during maintenance |
 
 ---
 
 ## 🎉 Conclusion
 
-You now have a comprehensive, VPS-level maintenance system that:
+You now have a comprehensive, battle-tested VPS maintenance system that provides:
 
-✅ **Automatically detects failures** and shows maintenance pages  
-✅ **Provides manual control** for planned maintenance  
-✅ **Works independently** of Docker, nginx, or application services  
-✅ **Offers professional appearance** instead of browser errors  
-✅ **Includes comprehensive monitoring** and logging  
-✅ **Provides emergency procedures** for critical situations  
+✅ **Automatic failover** when containers crash  
+✅ **Professional maintenance pages** instead of errors  
+✅ **Manual control** for planned maintenance  
+✅ **VPS-level protection** independent of applications  
+✅ **Complete monitoring** and logging  
+✅ **Emergency procedures** for critical situations  
 
-### Quick Reference Card
+### Success Indicators
 
-```bash
-# Essential commands
-sudo maintenance on        # Enable maintenance mode
-sudo maintenance off       # Disable maintenance mode  
-maintenance status         # Check current status
-monitor                   # Full system overview
-maintenance-logs          # Watch automatic monitoring
+Your system is working correctly when:
+- Container failures automatically trigger maintenance mode
+- Visitors see professional pages instead of browser errors  
+- Manual control works reliably
+- Logs show all activities
+- Recovery is automatic when services resume
 
-# Emergency commands
-sudo python3 /opt/maintenance/server.py 80  # Emergency activation
-sudo iptables -t nat -F PREROUTING          # Emergency disable
-```
+### Next Steps
 
-**Your maintenance system is ready to protect your services and provide professional maintenance pages when needed!**
+1. **Test thoroughly** with your actual containers
+2. **Customize the maintenance page** with your branding  
+3. **Set up monitoring dashboards** for operations team
+4. **Document any customizations** you make
+5. **Create runbooks** for your team
+
+**Your website is now protected 24/7 with professional maintenance pages!** 🚀
 
 ---
 
-**Last Updated**: December 2024  
-**Version**: 2.0  
-**Compatibility**: Ubuntu 18.04+, Debian 10+  
-**Dependencies**: Python 3.6+, iptables, systemd, Docker (optional)
+**Documentation Version:** 2.0  
+**Last Updated:** December 2024  
+**Compatibility:** Ubuntu 18.04+, Debian 10+  
+**Dependencies:** Python 3.6+, iptables, systemd, Docker
